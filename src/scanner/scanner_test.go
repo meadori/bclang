@@ -266,3 +266,66 @@ func TestSemiInsertion(t *testing.T) {
 		}
 	}
 }
+
+var test_do_str = `
+let START() = valof $(
+        for I = 1 to 5 for J = 1 to 5 do
+                writef("%N * %N = %N", I, J, I * J)
+        resultis 0
+$)`
+
+var test_do_tokens = [...]*Token{
+	NewToken(LET, "let"),
+	NewToken(NAME, "START"),
+	NewToken(RBRA, "("),
+	NewToken(RKET, ")"),
+	NewToken(EQ, "="),
+	NewToken(VALOF, "valof"),
+	NewToken(SECTBRA, "$("),
+	NewToken(FOR, "for"),
+	NewToken(NAME, "I"),
+	NewToken(EQ, "="),
+	NewToken(NUMBER, "1"),
+	NewToken(TO, "to"),
+	NewToken(NUMBER, "5"),
+	NewToken(DO, "do"), // This DO is inserted.
+	NewToken(FOR, "for"),
+	NewToken(NAME, "J"),
+	NewToken(EQ, "="),
+	NewToken(NUMBER, "1"),
+	NewToken(TO, "to"),
+	NewToken(NUMBER, "5"),
+	NewToken(DO, "do"),
+	NewToken(NAME, "writef"),
+	NewToken(RBRA, "("),
+	NewToken(STRINGCONST, "\"%N * %N = %N\""),
+	NewToken(COMMA, ","),
+	NewToken(NAME, "I"),
+	NewToken(COMMA, ","),
+	NewToken(NAME, "J"),
+	NewToken(COMMA, ","),
+	NewToken(NAME, "I"),
+	NewToken(STAR, "*"),
+	NewToken(NAME, "J"),
+	NewToken(RKET, ")"),
+	NewToken(SEMICOLON, ";"),
+	NewToken(RESULTIS, "resultis"),
+	NewToken(NUMBER, "0"),
+	NewToken(SECTKET, "$)"),
+	NewToken(EOF, ""),
+}
+
+func TestDoInsertion(t *testing.T) {
+	var s Scanner
+	s.Init([]byte(test_do_str))
+
+	for _, etok := range test_do_tokens {
+		tok := s.Next()
+		if tok.kind != etok.kind {
+			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+		}
+		if tok.literal != etok.literal {
+			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+		}
+	}
+}

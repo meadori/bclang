@@ -64,9 +64,22 @@ func isSemiStart(tok *Token) bool {
 	return false
 }
 
+func isDoStart(tok *Token) bool {
+	// 2.1.2 Hardware Conventions and Preprocessor Rules
+	// (e)
+
+	switch tok.kind {
+	case TEST, FOR, IF, UNLESS, UNTIL, WHILE, GOTO, RESULTIS,
+		CASE, DEFAULT, BREAK, RETURN, FINISH:
+		return true
+	}
+	return false
+}
+
 func isCommandEnd(tok *Token) bool {
 	// 2.1.2 Hardware Conventions and Preprocessor Rules
 	// (d)
+	// (e)
 
 	switch tok.kind {
 	case BREAK, RETURN, FINISH, REPEAT, SKET, RKET, SECTKET, NAME,
@@ -257,7 +270,11 @@ next:
 
 		switch s.state {
 		case maybeinsert:
-			if !isCommandEnd(tok) {
+			if isDoStart(tok) {
+				s.savedTok = tok
+				tok = NewToken(DO, "do")
+				s.state = normal
+			} else if !isCommandEnd(tok) {
 				s.state = normal
 			}
 		case maybesemi:
