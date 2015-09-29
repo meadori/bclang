@@ -8,6 +8,27 @@ import (
 	"testing"
 )
 
+// Helper test functions.
+
+func assertTokensEqual(t *testing.T, tok, etok *Token) {
+	if tok.kind != etok.kind {
+		t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+	}
+	if tok.literal != etok.literal {
+		t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+	}
+}
+
+func assertTokensEqualSource(t *testing.T, toks []*Token, str string) {
+	var s Scanner
+	s.Init([]byte(str))
+	for _, etok := range toks {
+		tok := s.Next()
+		assertTokensEqual(t, tok, etok)
+	}
+
+}
+
 type test struct {
 	tok TokenKind
 	str string
@@ -101,14 +122,8 @@ func TestSingleToken(t *testing.T) {
 
 	for _, etok := range test_single_token {
 		s.Init([]byte(etok.literal))
-
 		tok := s.Next()
-		if tok.kind != etok.kind {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-		if tok.literal != etok.literal {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
+		assertTokensEqual(t, tok, etok)
 	}
 }
 
@@ -121,7 +136,7 @@ $)
 
 and FACT(N) = N = 0 -> 1, N * FACT(N - 1)`
 
-var test_fact_tokens = [...]*Token{
+var test_fact_tokens = []*Token{
 	NewToken(GET, "get"),
 	NewToken(STRINGCONST, "\"libhdr\""),
 	NewToken(LET, "let"),
@@ -177,18 +192,7 @@ var test_fact_tokens = [...]*Token{
 }
 
 func TestMultiple(t *testing.T) {
-	var s Scanner
-	s.Init([]byte(test_fact_str))
-
-	for _, etok := range test_fact_tokens {
-		tok := s.Next()
-		if tok.kind != etok.kind {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-		if tok.literal != etok.literal {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-	}
+	assertTokensEqualSource(t, test_fact_tokens, test_fact_str)
 }
 
 var test_hello_str = `get "libhdr"
@@ -197,7 +201,7 @@ $( writes("Hello, World!*n")
    resultis 0
 $)`
 
-var test_hello_tokens = [...]*Token{
+var test_hello_tokens = []*Token{
 	NewToken(GET, "get"),
 	NewToken(STRINGCONST, "\"libhdr\""),
 	NewToken(LET, "let"),
@@ -219,18 +223,7 @@ var test_hello_tokens = [...]*Token{
 }
 
 func TestHello(t *testing.T) {
-	var s Scanner
-	s.Init([]byte(test_hello_str))
-
-	for _, etok := range test_hello_tokens {
-		tok := s.Next()
-		if tok.kind != etok.kind {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-		if tok.literal != etok.literal {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-	}
+	assertTokensEqualSource(t, test_hello_tokens, test_hello_str)
 }
 
 var test_semi_str = `global $(
@@ -238,7 +231,7 @@ var test_semi_str = `global $(
         ALL: 201
 $)`
 
-var test_semi_tokens = [...]*Token{
+var test_semi_tokens = []*Token{
 	NewToken(GLOBAL, "global"),
 	NewToken(SECTBRA, "$("),
 	NewToken(NAME, "COUNT"),
@@ -253,18 +246,7 @@ var test_semi_tokens = [...]*Token{
 }
 
 func TestSemiInsertion(t *testing.T) {
-	var s Scanner
-	s.Init([]byte(test_semi_str))
-
-	for _, etok := range test_semi_tokens {
-		tok := s.Next()
-		if tok.kind != etok.kind {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-		if tok.literal != etok.literal {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-	}
+	assertTokensEqualSource(t, test_semi_tokens, test_semi_str)
 }
 
 var test_do_str = `
@@ -274,7 +256,7 @@ let START() = valof $(
         resultis 0
 $)`
 
-var test_do_tokens = [...]*Token{
+var test_do_tokens = []*Token{
 	NewToken(LET, "let"),
 	NewToken(NAME, "START"),
 	NewToken(RBRA, "("),
@@ -316,16 +298,5 @@ var test_do_tokens = [...]*Token{
 }
 
 func TestDoInsertion(t *testing.T) {
-	var s Scanner
-	s.Init([]byte(test_do_str))
-
-	for _, etok := range test_do_tokens {
-		tok := s.Next()
-		if tok.kind != etok.kind {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-		if tok.literal != etok.literal {
-			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
-		}
-	}
+	assertTokensEqualSource(t, test_do_tokens, test_do_str)
 }
