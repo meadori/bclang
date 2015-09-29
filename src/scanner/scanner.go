@@ -93,7 +93,8 @@ func (s *Scanner) scanStringConst() *Token {
 	for s.ch != '"' {
 		s.next()
 	}
-	return NewToken(STRINGCONST, string(s.src[start:s.offset]))
+	s.next()
+	return NewToken(STRINGCONST, string(s.src[start:s.chOffset]))
 }
 
 func (s *Scanner) scanOperator(ch rune) *Token {

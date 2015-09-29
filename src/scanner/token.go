@@ -26,9 +26,6 @@ const (
 	// Comment
 	COMMENT
 
-	// Get
-	GET
-
 	// Literals
 	NAME
 	NUMBER
@@ -74,6 +71,7 @@ const (
 	FALSE
 	FINISH
 	FOR
+	GET
 	GLOBAL
 	GOTO
 	IF
@@ -113,6 +111,7 @@ var restoks = [...]string{
 	FALSE:       "false",
 	FINISH:      "finish",
 	FOR:         "for",
+	GET:         "get",
 	GLOBAL:      "global",
 	GOTO:        "goto",
 	IF:          "if",

@@ -149,3 +149,45 @@ func TestMultiple(t *testing.T) {
 		}
 	}
 }
+
+var test_hello_str = `get "libhdr"
+let start() = valof
+$( writes("Hello, World!*n")
+   resultis 0
+$)`
+
+var test_hello_tokens = [...]*Token{
+	NewToken(GET, "get"),
+	NewToken(STRINGCONST, "\"libhdr\""),
+	NewToken(LET, "let"),
+	NewToken(NAME, "start"),
+	NewToken(RBRA, "("),
+	NewToken(RKET, ")"),
+	NewToken(EQ, "="),
+	NewToken(VALOF, "valof"),
+	NewToken(SECTBRA, "$("),
+	NewToken(NAME, "writes"),
+	NewToken(RBRA, "("),
+	NewToken(STRINGCONST, "\"Hello, World!*n\""),
+	NewToken(RKET, ")"),
+	NewToken(SEMICOLON, ";"),
+	NewToken(RESULTIS, "resultis"),
+	NewToken(NUMBER, "0"),
+	NewToken(SECTKET, "$)"),
+	NewToken(EOF, ""),
+}
+
+func TestHello(t *testing.T) {
+	var s Scanner
+	s.Init([]byte(test_hello_str))
+
+	for _, etok := range test_hello_tokens {
+		tok := s.Next()
+		if tok.kind != etok.kind {
+			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+		}
+		if tok.literal != etok.literal {
+			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+		}
+	}
+}
