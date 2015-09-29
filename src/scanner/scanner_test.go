@@ -112,8 +112,48 @@ func TestSingleToken(t *testing.T) {
 	}
 }
 
-var test_fact_str = "FACT(N) = N = 0 -> 1, N * FACT(N - 1)"
+var test_fact_str = `get "libhdr"
+let START() = valof $(
+        for I = 1 to 5 do
+                writef("%N! = %I4*N", I, FACT(I))
+        resultis 0
+$)
+
+and FACT(N) = N = 0 -> 1, N * FACT(N - 1)`
+
 var test_fact_tokens = [...]*Token{
+	NewToken(GET, "get"),
+	NewToken(STRINGCONST, "\"libhdr\""),
+	NewToken(LET, "let"),
+	NewToken(NAME, "START"),
+	NewToken(RBRA, "("),
+	NewToken(RKET, ")"),
+	NewToken(EQ, "="),
+	NewToken(VALOF, "valof"),
+	NewToken(SECTBRA, "$("),
+	NewToken(FOR, "for"),
+	NewToken(NAME, "I"),
+	NewToken(EQ, "="),
+	NewToken(NUMBER, "1"),
+	NewToken(TO, "to"),
+	NewToken(NUMBER, "5"),
+	NewToken(DO, "do"),
+	NewToken(NAME, "writef"),
+	NewToken(RBRA, "("),
+	NewToken(STRINGCONST, "\"%N! = %I4*N\""),
+	NewToken(COMMA, ","),
+	NewToken(NAME, "I"),
+	NewToken(COMMA, ","),
+	NewToken(NAME, "FACT"),
+	NewToken(RBRA, "("),
+	NewToken(NAME, "I"),
+	NewToken(RKET, ")"),
+	NewToken(RKET, ")"),
+	NewToken(SEMICOLON, ";"),
+	NewToken(RESULTIS, "resultis"),
+	NewToken(NUMBER, "0"),
+	NewToken(SECTKET, "$)"),
+	NewToken(AND, "and"),
 	NewToken(NAME, "FACT"),
 	NewToken(RBRA, "("),
 	NewToken(NAME, "N"),
@@ -133,6 +173,7 @@ var test_fact_tokens = [...]*Token{
 	NewToken(MINUS, "-"),
 	NewToken(NUMBER, "1"),
 	NewToken(RKET, ")"),
+	NewToken(EOF, ""),
 }
 
 func TestMultiple(t *testing.T) {
@@ -182,6 +223,40 @@ func TestHello(t *testing.T) {
 	s.Init([]byte(test_hello_str))
 
 	for _, etok := range test_hello_tokens {
+		tok := s.Next()
+		if tok.kind != etok.kind {
+			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+		}
+		if tok.literal != etok.literal {
+			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
+		}
+	}
+}
+
+var test_semi_str = `global $(
+        COUNT: 200
+        ALL: 201
+$)`
+
+var test_semi_tokens = [...]*Token{
+	NewToken(GLOBAL, "global"),
+	NewToken(SECTBRA, "$("),
+	NewToken(NAME, "COUNT"),
+	NewToken(COLON, ":"),
+	NewToken(NUMBER, "200"),
+	NewToken(SEMICOLON, ";"),
+	NewToken(NAME, "ALL"),
+	NewToken(COLON, ":"),
+	NewToken(NUMBER, "201"),
+	NewToken(SECTKET, "$)"),
+	NewToken(EOF, ""),
+}
+
+func TestSemiInsertion(t *testing.T) {
+	var s Scanner
+	s.Init([]byte(test_semi_str))
+
+	for _, etok := range test_semi_tokens {
 		tok := s.Next()
 		if tok.kind != etok.kind {
 			t.Errorf("bad token: got '%s', expected '%s'", tok, etok)

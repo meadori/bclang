@@ -9,11 +9,20 @@
 
 package scanner
 
+// Scanner states.
+const (
+	normal      = iota // The normal state.
+	maybeinsert        // A token might be inserted automatically.
+	maybesemi          // A semicolon might be inserted.
+)
+
 type Scanner struct {
 	src      []byte // The source code.
 	ch       rune   // The current character.
 	chOffset int    // The current character offset.
 	offset   int    // The next character offset.
+	savedTok *Token // A saved token from an earlier scan.
+	state    int    // In semicolon insertion state.
 }
 
 func (s *Scanner) next() {
@@ -29,7 +38,7 @@ func (s *Scanner) next() {
 }
 
 func (s *Scanner) skipWhitespace() {
-	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' || s.ch == '\r' {
+	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' && s.state != maybeinsert || s.ch == '\r' {
 		s.next()
 	}
 }
@@ -40,6 +49,31 @@ func (s *Scanner) isLetter(ch rune) bool {
 
 func (s *Scanner) isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+func isSemiStart(tok *Token) bool {
+	// 2.1.2 Hardware Conventions and Preprocessor Rules
+	// (d)
+
+	switch tok.kind {
+	case TEST, FOR, IF, UNLESS, UNTIL, WHILE, GOTO, RESULTIS,
+		CASE, DEFAULT, BREAK, RETURN, FINISH, SECTBRA,
+		RBRA, VALOF, LV, RV, NAME:
+		return true
+	}
+	return false
+}
+
+func isCommandEnd(tok *Token) bool {
+	// 2.1.2 Hardware Conventions and Preprocessor Rules
+	// (d)
+
+	switch tok.kind {
+	case BREAK, RETURN, FINISH, REPEAT, SKET, RKET, SECTKET, NAME,
+		STRINGCONST, NUMBER, TRUE, FALSE:
+		return true
+	}
+	return false
 }
 
 func (s *Scanner) scanComment() string {
@@ -194,21 +228,49 @@ func (s *Scanner) Init(src []byte) {
 	s.src = src
 	s.ch = ' '
 	s.offset = 0
+	s.savedTok = nil
+	s.state = normal
 	s.next()
 }
 
 func (s *Scanner) Next() (tok *Token) {
-	s.skipWhitespace()
+next:
+	if s.savedTok != nil {
+		tok = s.savedTok
+		s.savedTok = nil
+	} else {
+		s.skipWhitespace()
 
-	switch ch := s.ch; {
-	case s.isLetter(ch):
-		tok = s.scanName()
-	case s.isDigit(ch):
-		tok = s.scanNumber()
-	case ch == '"':
-		tok = s.scanStringConst()
-	default:
-		tok = s.scanOperator(ch)
+		switch ch := s.ch; {
+		case s.isLetter(ch):
+			tok = s.scanName()
+		case s.isDigit(ch):
+			tok = s.scanNumber()
+		case ch == '"':
+			tok = s.scanStringConst()
+		case ch == '\n':
+			s.state = maybesemi
+			goto next
+		default:
+			tok = s.scanOperator(ch)
+		}
+
+		switch s.state {
+		case maybeinsert:
+			if !isCommandEnd(tok) {
+				s.state = normal
+			}
+		case maybesemi:
+			if isSemiStart(tok) {
+				s.savedTok = tok
+				tok = NewToken(SEMICOLON, ";")
+			}
+			s.state = normal
+		case normal:
+			if isCommandEnd(tok) {
+				s.state = maybeinsert
+			}
+		}
 	}
 
 	return
