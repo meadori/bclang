@@ -5,21 +5,22 @@
 package scanner
 
 import (
+	"github.com/meadori/bcpl-go/src/token"
 	"testing"
 )
 
 // Helper test functions.
 
-func assertTokensEqual(t *testing.T, tok, etok *Token) {
-	if tok.kind != etok.kind {
+func assertTokensEqual(t *testing.T, tok, etok *token.Token) {
+	if tok.Kind != etok.Kind {
 		t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
 	}
-	if tok.literal != etok.literal {
+	if tok.Lit != etok.Lit {
 		t.Errorf("bad token: got '%s', expected '%s'", tok, etok)
 	}
 }
 
-func assertTokensEqualSource(t *testing.T, toks []*Token, str string) {
+func assertTokensEqualSource(t *testing.T, toks []*token.Token, str string) {
 	var s Scanner
 	s.Init([]byte(str))
 	for _, etok := range toks {
@@ -30,98 +31,98 @@ func assertTokensEqualSource(t *testing.T, toks []*Token, str string) {
 }
 
 type test struct {
-	tok TokenKind
+	tok token.TokenKind
 	str string
 }
 
-var test_single_token = [...]*Token{
-	NewToken(EOF, ""),
-	NewToken(COMMENT, "// this is a BCPL a comment!\n"),
+var test_single_token = [...]*token.Token{
+	token.NewToken(token.EOF, ""),
+	token.NewToken(token.COMMENT, "// this is a BCPL a comment!\n"),
 
 	// Names.
-	NewToken(NAME, "Global"),
-	NewToken(NAME, "Let"),
-	NewToken(NAME, "a"),
-	NewToken(NAME, "Z"),
+	token.NewToken(token.NAME, "Global"),
+	token.NewToken(token.NAME, "Let"),
+	token.NewToken(token.NAME, "a"),
+	token.NewToken(token.NAME, "Z"),
 
 	// Numbers.
-	NewToken(NUMBER, "1"),
-	NewToken(NUMBER, "98765"),
+	token.NewToken(token.NUMBER, "1"),
+	token.NewToken(token.NUMBER, "98765"),
 
 	// String constants.
-	NewToken(STRINGCONST, "\"foo bar baz\n\""),
+	token.NewToken(token.STRINGCONST, "\"foo bar baz\n\""),
 
 	// Operators.
-	NewToken(VALOF, "valof"),
-	NewToken(LV, "lv"),
-	NewToken(RV, "rv"),
-	NewToken(DIV, "/"),
-	NewToken(REM, "rem"),
-	NewToken(PLUS, "+"),
-	NewToken(MINUS, "-"),
-	NewToken(EQ, "="),
-	NewToken(NE, "!="),
-	NewToken(LS, "<"),
-	NewToken(GR, ">"),
-	NewToken(LE, "<="),
-	NewToken(GE, ">="),
-	NewToken(NOT, "!"),
-	NewToken(LSHIFT, "<<"),
-	NewToken(RSHIFT, ">>"),
-	NewToken(LOGAND, "&"),
-	NewToken(LOGOR, "|"),
-	NewToken(EQV, "eqv"),
-	NewToken(NEQV, "neqv"),
-	NewToken(COND, "->"),
-	NewToken(COMMA, ","),
-	NewToken(ASS, ":="),
-	NewToken(SECTBRA, "$("),
-	NewToken(SECTKET, "$)"),
-	NewToken(RBRA, "("),
-	NewToken(RKET, ")"),
-	NewToken(SBRA, "["),
-	NewToken(SKET, "]"),
-	NewToken(COLON, ":"),
-	NewToken(SEMICOLON, ";"),
-	NewToken(STAR, "*"),
+	token.NewToken(token.VALOF, "valof"),
+	token.NewToken(token.LV, "lv"),
+	token.NewToken(token.RV, "rv"),
+	token.NewToken(token.DIV, "/"),
+	token.NewToken(token.REM, "rem"),
+	token.NewToken(token.PLUS, "+"),
+	token.NewToken(token.MINUS, "-"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.NE, "!="),
+	token.NewToken(token.LS, "<"),
+	token.NewToken(token.GR, ">"),
+	token.NewToken(token.LE, "<="),
+	token.NewToken(token.GE, ">="),
+	token.NewToken(token.NOT, "!"),
+	token.NewToken(token.LSHIFT, "<<"),
+	token.NewToken(token.RSHIFT, ">>"),
+	token.NewToken(token.LOGAND, "&"),
+	token.NewToken(token.LOGOR, "|"),
+	token.NewToken(token.EQV, "eqv"),
+	token.NewToken(token.NEQV, "neqv"),
+	token.NewToken(token.COND, "->"),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.ASS, ":="),
+	token.NewToken(token.SECTBRA, "$("),
+	token.NewToken(token.SECTKET, "$)"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.SBRA, "["),
+	token.NewToken(token.SKET, "]"),
+	token.NewToken(token.COLON, ":"),
+	token.NewToken(token.SEMICOLON, ";"),
+	token.NewToken(token.STAR, "*"),
 
 	// Keywords.
-	NewToken(TRUE, "true"),
-	NewToken(FALSE, "false"),
-	NewToken(AND, "and"),
-	NewToken(GOTO, "goto"),
-	NewToken(RESULTIS, "resultis"),
-	NewToken(TEST, "test"),
-	NewToken(FOR, "for"),
-	NewToken(IF, "if"),
-	NewToken(UNLESS, "unless"),
-	NewToken(WHILE, "while"),
-	NewToken(UNTIL, "until"),
-	NewToken(REPEAT, "repeat"),
-	NewToken(REPEATWHILE, "repeatwhile"),
-	NewToken(REPEATUNTIL, "repeatuntil"),
-	NewToken(BREAK, "break"),
-	NewToken(RETURN, "return"),
-	NewToken(FINISH, "finish"),
-	NewToken(SWITCHON, "switchon"),
-	NewToken(CASE, "case"),
-	NewToken(DEFAULT, "default"),
-	NewToken(LET, "let"),
-	NewToken(MANIFEST, "manifest"),
-	NewToken(GLOBAL, "global"),
-	NewToken(BE, "be"),
-	NewToken(INTO, "into"),
-	NewToken(TO, "to"),
-	NewToken(DO, "do"),
-	NewToken(OR, "or"),
-	NewToken(VEC, "vec"),
+	token.NewToken(token.TRUE, "true"),
+	token.NewToken(token.FALSE, "false"),
+	token.NewToken(token.AND, "and"),
+	token.NewToken(token.GOTO, "goto"),
+	token.NewToken(token.RESULTIS, "resultis"),
+	token.NewToken(token.TEST, "test"),
+	token.NewToken(token.FOR, "for"),
+	token.NewToken(token.IF, "if"),
+	token.NewToken(token.UNLESS, "unless"),
+	token.NewToken(token.WHILE, "while"),
+	token.NewToken(token.UNTIL, "until"),
+	token.NewToken(token.REPEAT, "repeat"),
+	token.NewToken(token.REPEATWHILE, "repeatwhile"),
+	token.NewToken(token.REPEATUNTIL, "repeatuntil"),
+	token.NewToken(token.BREAK, "break"),
+	token.NewToken(token.RETURN, "return"),
+	token.NewToken(token.FINISH, "finish"),
+	token.NewToken(token.SWITCHON, "switchon"),
+	token.NewToken(token.CASE, "case"),
+	token.NewToken(token.DEFAULT, "default"),
+	token.NewToken(token.LET, "let"),
+	token.NewToken(token.MANIFEST, "manifest"),
+	token.NewToken(token.GLOBAL, "global"),
+	token.NewToken(token.BE, "be"),
+	token.NewToken(token.INTO, "into"),
+	token.NewToken(token.TO, "to"),
+	token.NewToken(token.DO, "do"),
+	token.NewToken(token.OR, "or"),
+	token.NewToken(token.VEC, "vec"),
 }
 
 func TestSingleToken(t *testing.T) {
 	var s Scanner
 
 	for _, etok := range test_single_token {
-		s.Init([]byte(etok.literal))
+		s.Init([]byte(etok.Lit))
 		tok := s.Next()
 		assertTokensEqual(t, tok, etok)
 	}
@@ -136,59 +137,59 @@ $)
 
 and FACT(N) = N = 0 -> 1, N * FACT(N - 1)`
 
-var test_fact_tokens = []*Token{
-	NewToken(GET, "get"),
-	NewToken(STRINGCONST, "\"libhdr\""),
-	NewToken(LET, "let"),
-	NewToken(NAME, "START"),
-	NewToken(RBRA, "("),
-	NewToken(RKET, ")"),
-	NewToken(EQ, "="),
-	NewToken(VALOF, "valof"),
-	NewToken(SECTBRA, "$("),
-	NewToken(FOR, "for"),
-	NewToken(NAME, "I"),
-	NewToken(EQ, "="),
-	NewToken(NUMBER, "1"),
-	NewToken(TO, "to"),
-	NewToken(NUMBER, "5"),
-	NewToken(DO, "do"),
-	NewToken(NAME, "writef"),
-	NewToken(RBRA, "("),
-	NewToken(STRINGCONST, "\"%N! = %I4*N\""),
-	NewToken(COMMA, ","),
-	NewToken(NAME, "I"),
-	NewToken(COMMA, ","),
-	NewToken(NAME, "FACT"),
-	NewToken(RBRA, "("),
-	NewToken(NAME, "I"),
-	NewToken(RKET, ")"),
-	NewToken(RKET, ")"),
-	NewToken(SEMICOLON, ";"),
-	NewToken(RESULTIS, "resultis"),
-	NewToken(NUMBER, "0"),
-	NewToken(SECTKET, "$)"),
-	NewToken(AND, "and"),
-	NewToken(NAME, "FACT"),
-	NewToken(RBRA, "("),
-	NewToken(NAME, "N"),
-	NewToken(RKET, ")"),
-	NewToken(EQ, "="),
-	NewToken(NAME, "N"),
-	NewToken(EQ, "="),
-	NewToken(NUMBER, "0"),
-	NewToken(COND, "->"),
-	NewToken(NUMBER, "1"),
-	NewToken(COMMA, ","),
-	NewToken(NAME, "N"),
-	NewToken(STAR, "*"),
-	NewToken(NAME, "FACT"),
-	NewToken(RBRA, "("),
-	NewToken(NAME, "N"),
-	NewToken(MINUS, "-"),
-	NewToken(NUMBER, "1"),
-	NewToken(RKET, ")"),
-	NewToken(EOF, ""),
+var test_fact_tokens = []*token.Token{
+	token.NewToken(token.GET, "get"),
+	token.NewToken(token.STRINGCONST, "\"libhdr\""),
+	token.NewToken(token.LET, "let"),
+	token.NewToken(token.NAME, "START"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.VALOF, "valof"),
+	token.NewToken(token.SECTBRA, "$("),
+	token.NewToken(token.FOR, "for"),
+	token.NewToken(token.NAME, "I"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.NUMBER, "1"),
+	token.NewToken(token.TO, "to"),
+	token.NewToken(token.NUMBER, "5"),
+	token.NewToken(token.DO, "do"),
+	token.NewToken(token.NAME, "writef"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.STRINGCONST, "\"%N! = %I4*N\""),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.NAME, "I"),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.NAME, "FACT"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.NAME, "I"),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.SEMICOLON, ";"),
+	token.NewToken(token.RESULTIS, "resultis"),
+	token.NewToken(token.NUMBER, "0"),
+	token.NewToken(token.SECTKET, "$)"),
+	token.NewToken(token.AND, "and"),
+	token.NewToken(token.NAME, "FACT"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.NAME, "N"),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.NAME, "N"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.NUMBER, "0"),
+	token.NewToken(token.COND, "->"),
+	token.NewToken(token.NUMBER, "1"),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.NAME, "N"),
+	token.NewToken(token.STAR, "*"),
+	token.NewToken(token.NAME, "FACT"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.NAME, "N"),
+	token.NewToken(token.MINUS, "-"),
+	token.NewToken(token.NUMBER, "1"),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.EOF, ""),
 }
 
 func TestMultiple(t *testing.T) {
@@ -201,25 +202,25 @@ $( writes("Hello, World!*n")
    resultis 0
 $)`
 
-var test_hello_tokens = []*Token{
-	NewToken(GET, "get"),
-	NewToken(STRINGCONST, "\"libhdr\""),
-	NewToken(LET, "let"),
-	NewToken(NAME, "start"),
-	NewToken(RBRA, "("),
-	NewToken(RKET, ")"),
-	NewToken(EQ, "="),
-	NewToken(VALOF, "valof"),
-	NewToken(SECTBRA, "$("),
-	NewToken(NAME, "writes"),
-	NewToken(RBRA, "("),
-	NewToken(STRINGCONST, "\"Hello, World!*n\""),
-	NewToken(RKET, ")"),
-	NewToken(SEMICOLON, ";"),
-	NewToken(RESULTIS, "resultis"),
-	NewToken(NUMBER, "0"),
-	NewToken(SECTKET, "$)"),
-	NewToken(EOF, ""),
+var test_hello_tokens = []*token.Token{
+	token.NewToken(token.GET, "get"),
+	token.NewToken(token.STRINGCONST, "\"libhdr\""),
+	token.NewToken(token.LET, "let"),
+	token.NewToken(token.NAME, "start"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.VALOF, "valof"),
+	token.NewToken(token.SECTBRA, "$("),
+	token.NewToken(token.NAME, "writes"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.STRINGCONST, "\"Hello, World!*n\""),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.SEMICOLON, ";"),
+	token.NewToken(token.RESULTIS, "resultis"),
+	token.NewToken(token.NUMBER, "0"),
+	token.NewToken(token.SECTKET, "$)"),
+	token.NewToken(token.EOF, ""),
 }
 
 func TestHello(t *testing.T) {
@@ -231,18 +232,18 @@ var test_semi_str = `global $(
         ALL: 201
 $)`
 
-var test_semi_tokens = []*Token{
-	NewToken(GLOBAL, "global"),
-	NewToken(SECTBRA, "$("),
-	NewToken(NAME, "COUNT"),
-	NewToken(COLON, ":"),
-	NewToken(NUMBER, "200"),
-	NewToken(SEMICOLON, ";"),
-	NewToken(NAME, "ALL"),
-	NewToken(COLON, ":"),
-	NewToken(NUMBER, "201"),
-	NewToken(SECTKET, "$)"),
-	NewToken(EOF, ""),
+var test_semi_tokens = []*token.Token{
+	token.NewToken(token.GLOBAL, "global"),
+	token.NewToken(token.SECTBRA, "$("),
+	token.NewToken(token.NAME, "COUNT"),
+	token.NewToken(token.COLON, ":"),
+	token.NewToken(token.NUMBER, "200"),
+	token.NewToken(token.SEMICOLON, ";"),
+	token.NewToken(token.NAME, "ALL"),
+	token.NewToken(token.COLON, ":"),
+	token.NewToken(token.NUMBER, "201"),
+	token.NewToken(token.SECTKET, "$)"),
+	token.NewToken(token.EOF, ""),
 }
 
 func TestSemiInsertion(t *testing.T) {
@@ -256,45 +257,45 @@ let START() = valof $(
         resultis 0
 $)`
 
-var test_do_tokens = []*Token{
-	NewToken(LET, "let"),
-	NewToken(NAME, "START"),
-	NewToken(RBRA, "("),
-	NewToken(RKET, ")"),
-	NewToken(EQ, "="),
-	NewToken(VALOF, "valof"),
-	NewToken(SECTBRA, "$("),
-	NewToken(FOR, "for"),
-	NewToken(NAME, "I"),
-	NewToken(EQ, "="),
-	NewToken(NUMBER, "1"),
-	NewToken(TO, "to"),
-	NewToken(NUMBER, "5"),
-	NewToken(DO, "do"), // This DO is inserted.
-	NewToken(FOR, "for"),
-	NewToken(NAME, "J"),
-	NewToken(EQ, "="),
-	NewToken(NUMBER, "1"),
-	NewToken(TO, "to"),
-	NewToken(NUMBER, "5"),
-	NewToken(DO, "do"),
-	NewToken(NAME, "writef"),
-	NewToken(RBRA, "("),
-	NewToken(STRINGCONST, "\"%N * %N = %N\""),
-	NewToken(COMMA, ","),
-	NewToken(NAME, "I"),
-	NewToken(COMMA, ","),
-	NewToken(NAME, "J"),
-	NewToken(COMMA, ","),
-	NewToken(NAME, "I"),
-	NewToken(STAR, "*"),
-	NewToken(NAME, "J"),
-	NewToken(RKET, ")"),
-	NewToken(SEMICOLON, ";"),
-	NewToken(RESULTIS, "resultis"),
-	NewToken(NUMBER, "0"),
-	NewToken(SECTKET, "$)"),
-	NewToken(EOF, ""),
+var test_do_tokens = []*token.Token{
+	token.NewToken(token.LET, "let"),
+	token.NewToken(token.NAME, "START"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.VALOF, "valof"),
+	token.NewToken(token.SECTBRA, "$("),
+	token.NewToken(token.FOR, "for"),
+	token.NewToken(token.NAME, "I"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.NUMBER, "1"),
+	token.NewToken(token.TO, "to"),
+	token.NewToken(token.NUMBER, "5"),
+	token.NewToken(token.DO, "do"), // This DO is inserted.
+	token.NewToken(token.FOR, "for"),
+	token.NewToken(token.NAME, "J"),
+	token.NewToken(token.EQ, "="),
+	token.NewToken(token.NUMBER, "1"),
+	token.NewToken(token.TO, "to"),
+	token.NewToken(token.NUMBER, "5"),
+	token.NewToken(token.DO, "do"),
+	token.NewToken(token.NAME, "writef"),
+	token.NewToken(token.RBRA, "("),
+	token.NewToken(token.STRINGCONST, "\"%N * %N = %N\""),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.NAME, "I"),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.NAME, "J"),
+	token.NewToken(token.COMMA, ","),
+	token.NewToken(token.NAME, "I"),
+	token.NewToken(token.STAR, "*"),
+	token.NewToken(token.NAME, "J"),
+	token.NewToken(token.RKET, ")"),
+	token.NewToken(token.SEMICOLON, ";"),
+	token.NewToken(token.RESULTIS, "resultis"),
+	token.NewToken(token.NUMBER, "0"),
+	token.NewToken(token.SECTKET, "$)"),
+	token.NewToken(token.EOF, ""),
 }
 
 func TestDoInsertion(t *testing.T) {

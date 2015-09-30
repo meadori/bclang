@@ -7,13 +7,13 @@
 //
 //   * https://github.com/golang/go/blob/master/src/go/token/token.go
 
-package scanner
+package token
 
 type TokenKind int
 
 type Token struct {
-	kind    TokenKind
-	literal string
+	Kind TokenKind
+	Lit  string
 }
 
 // 2.1.1 BCPL Canonical Symbols
@@ -159,14 +159,14 @@ func LookupName(str string) TokenKind {
 }
 
 // Create a new token.
-func NewToken(kind TokenKind, literal string) *Token {
+func NewToken(kind TokenKind, lit string) *Token {
 	t := new(Token)
-	t.kind = kind
-	t.literal = literal
+	t.Kind = kind
+	t.Lit = lit
 	return t
 }
 
 // Return the string representation of the token.
 func (tok Token) String() string {
-	return tok.literal
+	return tok.Lit
 }

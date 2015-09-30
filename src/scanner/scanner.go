@@ -9,6 +9,8 @@
 
 package scanner
 
+import "github.com/meadori/bcpl-go/src/token"
+
 // Scanner states.
 const (
 	normal      = iota // The normal state.
@@ -17,12 +19,12 @@ const (
 )
 
 type Scanner struct {
-	src      []byte // The source code.
-	ch       rune   // The current character.
-	chOffset int    // The current character offset.
-	offset   int    // The next character offset.
-	savedTok *Token // A saved token from an earlier scan.
-	state    int    // In semicolon insertion state.
+	src      []byte       // The source code.
+	ch       rune         // The current character.
+	chOffset int          // The current character offset.
+	offset   int          // The next character offset.
+	savedTok *token.Token // A saved token from an earlier scan.
+	state    int          // In semicolon insertion state.
 }
 
 func (s *Scanner) next() {
@@ -51,39 +53,43 @@ func (s *Scanner) isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
 
-func isSemiStart(tok *Token) bool {
+func isSemiStart(tok *token.Token) bool {
 	// 2.1.2 Hardware Conventions and Preprocessor Rules
 	// (d)
 
-	switch tok.kind {
-	case TEST, FOR, IF, UNLESS, UNTIL, WHILE, GOTO, RESULTIS,
-		CASE, DEFAULT, BREAK, RETURN, FINISH, SECTBRA,
-		RBRA, VALOF, LV, RV, NAME:
+	switch tok.Kind {
+	case token.TEST, token.FOR, token.IF, token.UNLESS, token.UNTIL,
+		token.WHILE, token.GOTO, token.RESULTIS, token.CASE,
+		token.DEFAULT, token.BREAK, token.RETURN, token.FINISH,
+		token.SECTBRA, token.RBRA, token.VALOF, token.LV, token.RV,
+		token.NAME:
 		return true
 	}
 	return false
 }
 
-func isDoStart(tok *Token) bool {
+func isDoStart(tok *token.Token) bool {
 	// 2.1.2 Hardware Conventions and Preprocessor Rules
 	// (e)
 
-	switch tok.kind {
-	case TEST, FOR, IF, UNLESS, UNTIL, WHILE, GOTO, RESULTIS,
-		CASE, DEFAULT, BREAK, RETURN, FINISH:
+	switch tok.Kind {
+	case token.TEST, token.FOR, token.IF, token.UNLESS, token.UNTIL,
+		token.WHILE, token.GOTO, token.RESULTIS, token.CASE,
+		token.DEFAULT, token.BREAK, token.RETURN, token.FINISH:
 		return true
 	}
 	return false
 }
 
-func isCommandEnd(tok *Token) bool {
+func isCommandEnd(tok *token.Token) bool {
 	// 2.1.2 Hardware Conventions and Preprocessor Rules
 	// (d)
 	// (e)
 
-	switch tok.kind {
-	case BREAK, RETURN, FINISH, REPEAT, SKET, RKET, SECTKET, NAME,
-		STRINGCONST, NUMBER, TRUE, FALSE:
+	switch tok.Kind {
+	case token.BREAK, token.RETURN, token.FINISH, token.REPEAT,
+		token.SKET, token.RKET, token.SECTKET, token.NAME,
+		token.STRINGCONST, token.NUMBER, token.TRUE, token.FALSE:
 		return true
 	}
 	return false
@@ -102,7 +108,7 @@ func (s *Scanner) scanComment() string {
 	return string(s.src[start:s.offset])
 }
 
-func (s *Scanner) scanName() *Token {
+func (s *Scanner) scanName() *token.Token {
 	// 2.1.2 Hardware Conventions and Preprocessor Rules
 	// (a)
 
@@ -118,34 +124,34 @@ func (s *Scanner) scanName() *Token {
 	// (2) A sequence of two or more small letters which is not part of a NAME,
 	// SECTBRA, SECTKET or STRINGCONST is a reserved system word and may be used
 	// to represent a canonical symbol.
-	kind := NAME
+	kind := token.NAME
 	literal := string(str)
 	if len(str) > 1 {
-		kind = LookupName(literal)
+		kind = token.LookupName(literal)
 	}
-	return NewToken(kind, literal)
+	return token.NewToken(kind, literal)
 }
 
-func (s *Scanner) scanNumber() *Token {
+func (s *Scanner) scanNumber() *token.Token {
 	start := s.chOffset
 	for s.isDigit(s.ch) {
 		s.next()
 	}
-	return NewToken(NUMBER, string(s.src[start:s.chOffset]))
+	return token.NewToken(token.NUMBER, string(s.src[start:s.chOffset]))
 }
 
-func (s *Scanner) scanStringConst() *Token {
+func (s *Scanner) scanStringConst() *token.Token {
 	start := s.offset - 1
 	s.next()
 	for s.ch != '"' {
 		s.next()
 	}
 	s.next()
-	return NewToken(STRINGCONST, string(s.src[start:s.chOffset]))
+	return token.NewToken(token.STRINGCONST, string(s.src[start:s.chOffset]))
 }
 
-func (s *Scanner) scanOperator(ch rune) *Token {
-	kind := ILLEGAL
+func (s *Scanner) scanOperator(ch rune) *token.Token {
+	kind := token.ILLEGAL
 	lit := string(ch)
 	s.next()
 
@@ -153,88 +159,88 @@ func (s *Scanner) scanOperator(ch rune) *Token {
 	case '/':
 		if s.ch == '/' {
 			s.next()
-			kind, lit = COMMENT, s.scanComment()
+			kind, lit = token.COMMENT, s.scanComment()
 		} else {
-			kind = DIV
+			kind = token.DIV
 		}
 	case '+':
-		kind, lit = PLUS, "+"
+		kind, lit = token.PLUS, "+"
 	case '-':
 		if s.ch == '>' {
 			s.next()
-			kind, lit = COND, "->"
+			kind, lit = token.COND, "->"
 		} else {
-			kind = MINUS
+			kind = token.MINUS
 		}
 	case '=':
-		kind = EQ
+		kind = token.EQ
 	case '!':
 		if s.ch == '=' {
 			s.next()
-			kind, lit = NE, "!="
+			kind, lit = token.NE, "!="
 		} else {
-			kind = NOT
+			kind = token.NOT
 		}
 	case '<':
 		switch s.ch {
 		case '=':
 			s.next()
-			kind, lit = LE, "<="
+			kind, lit = token.LE, "<="
 		case '<':
 			s.next()
-			kind, lit = LSHIFT, "<<"
+			kind, lit = token.LSHIFT, "<<"
 		default:
-			kind = LS
+			kind = token.LS
 		}
 	case '>':
 		switch s.ch {
 		case '=':
 			s.next()
-			kind, lit = GE, ">="
+			kind, lit = token.GE, ">="
 		case '>':
 			s.next()
-			kind, lit = RSHIFT, ">>"
+			kind, lit = token.RSHIFT, ">>"
 		default:
-			kind = GR
+			kind = token.GR
 		}
 	case '&':
-		kind = LOGAND
+		kind = token.LOGAND
 	case '|':
-		kind = LOGOR
+		kind = token.LOGOR
 	case ',':
-		kind = COMMA
+		kind = token.COMMA
 	case ':':
 		if s.ch == '=' {
-			kind, lit = ASS, ":="
+			kind, lit = token.ASS, ":="
 		} else {
-			kind = COLON
+			kind = token.COLON
 		}
 	case '$':
 		switch s.ch {
 		case '(':
 			s.next()
-			kind, lit = SECTBRA, "$("
+			kind, lit = token.SECTBRA, "$("
 		case ')':
 			s.next()
-			kind, lit = SECTKET, "$)"
+			kind, lit = token.SECTKET, "$)"
 		}
 	case '(':
-		kind = RBRA
+		kind = token.RBRA
 	case ')':
-		kind = RKET
+		kind = token.RKET
 	case '[':
-		kind = SBRA
+		kind = token.SBRA
 	case ']':
-		kind = SKET
+		kind = token.SKET
 	case ';':
-		kind = SEMICOLON
+		kind = token.SEMICOLON
 	case '*':
-		kind = STAR
+		kind = token.STAR
 	case -1:
-		kind, lit = EOF, ""
+		kind, lit = token.EOF, ""
 	}
 
-	return NewToken(kind, lit)
+	return token.NewToken(kind, lit)
 }
 
 func (s *Scanner) Init(src []byte) {
@@ -246,7 +252,7 @@ func (s *Scanner) Init(src []byte) {
 	s.next()
 }
 
-func (s *Scanner) Next() (tok *Token) {
+func (s *Scanner) Next() (tok *token.Token) {
 next:
 	if s.savedTok != nil {
 		tok = s.savedTok
@@ -272,7 +278,7 @@ next:
 		case maybeinsert:
 			if isDoStart(tok) {
 				s.savedTok = tok
-				tok = NewToken(DO, "do")
+				tok = token.NewToken(token.DO, "do")
 				s.state = normal
 			} else if !isCommandEnd(tok) {
 				s.state = normal
@@ -280,7 +286,7 @@ next:
 		case maybesemi:
 			if isSemiStart(tok) {
 				s.savedTok = tok
-				tok = NewToken(SEMICOLON, ";")
+				tok = token.NewToken(token.SEMICOLON, ";")
 			}
 			s.state = normal
 		case normal:
