@@ -30,11 +30,6 @@ func assertTokensEqualSource(t *testing.T, toks []*token.Token, str string) {
 
 }
 
-type test struct {
-	tok token.TokenKind
-	str string
-}
-
 var test_single_token = [...]*token.Token{
 	token.NewToken(token.EOF, ""),
 	token.NewToken(token.COMMENT, "// this is a BCPL a comment!\n"),
