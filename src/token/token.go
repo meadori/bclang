@@ -101,6 +101,43 @@ const (
 )
 
 var restoks = [...]string{
+	ILLEGAL: "ILLEGAL",
+
+	EOF: "EOF",
+
+	COMMENT: "COMMENT",
+
+	NAME:        "NAME",
+	NUMBER:      "NUMBER",
+	STRINGCONST: "STRINGCONST",
+
+	ASS:       ":=",
+	COLON:     ":",
+	COMMA:     ",",
+	COND:      "->",
+	DIV:       "/",
+	EQ:        "=",
+	GE:        ">=",
+	GR:        ">",
+	LE:        "<=",
+	LOGAND:    "&",
+	LOGOR:     "|",
+	LS:        "<",
+	LSHIFT:    "<<",
+	MINUS:     "-",
+	NE:        "!=",
+	NOT:       "!",
+	PLUS:      "+",
+	RBRA:      "(",
+	RKET:      ")",
+	RSHIFT:    ">>",
+	SBRA:      "[",
+	SECTBRA:   "$(",
+	SECTKET:   "$)",
+	SEMICOLON: ";",
+	SKET:      "]",
+	STAR:      "*",
+
 	AND:         "and",
 	BE:          "be",
 	BREAK:       "break",
@@ -169,4 +206,9 @@ func NewToken(kind TokenKind, lit string) *Token {
 // Return the string representation of the token.
 func (tok Token) String() string {
 	return tok.Lit
+}
+
+// Return the string representation of the token kind.
+func (kind TokenKind) String() string {
+	return restoks[kind]
 }
