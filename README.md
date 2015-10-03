@@ -1,4 +1,4 @@
-# bcpl-go
+# bcc (Before C Compiler)
 
 This is an implementation of the BCPL programming language written in the Go
 programming language.  BCPL, as implemented here, follows Dennis Ritchie's
