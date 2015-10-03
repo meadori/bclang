@@ -31,21 +31,7 @@ func (p *Parser) match(kind token.TokenKind) bool {
 	}
 }
 
-func (p *Parser) parseNameList() *ast.NameList {
-	// namelist := <name> [',' <name> ]
-	if p.tok.Kind == token.NAME {
-		var namelist []*ast.Name
-		namelist = append(namelist, &ast.Name{p.tok.Lit})
-		p.scan.Next()
-		for p.match(token.COMMA) {
-			namelist = append(namelist, &ast.Name{p.tok.Lit})
-		}
-		return &ast.NameList{namelist}
-	}
-	return nil
-}
-
-func (p *Parser) parseVarDecl() *ast.VarDecl {
+func (p *Parser) parseSingleDecl() *ast.VarDecl {
 	name, constant := p.tok.Lit, 0
 	p.match(token.NAME)
 
@@ -62,7 +48,7 @@ func (p *Parser) parseVarDecl() *ast.VarDecl {
 	return &ast.VarDecl{name, constant}
 }
 
-func (p *Parser) parseConstantDefinition() ast.Decl {
+func (p *Parser) parseDecl() ast.Decl {
 	// constdef := < manifest | global >
 	//          $( <name> < '=' | ':' > <constant>
 	//             [';' <name> <'=' | ':'> <constant>]* $)
@@ -74,10 +60,10 @@ func (p *Parser) parseConstantDefinition() ast.Decl {
 	// Build up the list of declarations.
 	p.match(token.SECTBRA)
 	var decls []*ast.VarDecl
-	decls = append(decls, p.parseVarDecl())
+	decls = append(decls, p.parseSingleDecl())
 	for p.tok.Kind == token.SEMICOLON {
 		p.match(token.SEMICOLON)
-		decls = append(decls, p.parseVarDecl())
+		decls = append(decls, p.parseSingleDecl())
 	}
 	p.match(token.SECTKET)
 
@@ -89,26 +75,98 @@ func (p *Parser) parseConstantDefinition() ast.Decl {
 	}
 }
 
-func (p *Parser) parseDefinitions() *ast.Module {
-	// definition := <D> | <constdef>
+func (p *Parser) parseExpr() ast.Expr {
+	lit := p.tok.Lit
+	p.match(token.NUMBER)
+	constant, _ := strconv.Atoi(lit)
+
+	return &ast.ConstExpr{constant}
+}
+
+func (p *Parser) parseExprList() *ast.ExprList {
+	var exprlist []ast.Expr
+	exprlist = append(exprlist, p.parseExpr())
+
+	for p.tok.Kind == token.COMMA {
+		p.match(token.COMMA)
+		exprlist = append(exprlist, p.parseExpr())
+	}
+
+	return &ast.ExprList{exprlist}
+}
+
+func (p *Parser) parseVarDef(name string) ast.Def {
+	var namelist []*ast.Name
+	namelist = append(namelist, &ast.Name{name})
+
+	for p.tok.Kind == token.COMMA {
+		p.match(token.COMMA)
+		namelist = append(namelist, &ast.Name{p.tok.Lit})
+		p.match(token.NAME)
+	}
+
+	p.match(token.EQ)
+
+	if p.tok.Kind == token.VEC {
+		p.match(token.VEC)
+		return &ast.VecDef{name, p.parseExpr()}
+	} else {
+		exprlist := p.parseExprList()
+		if len(namelist) != len(exprlist.Exprs) {
+			p.error("assignment count mismatch")
+		}
+		return &ast.SimpleDef{&ast.NameList{namelist}, exprlist}
+	}
+}
+
+func (p *Parser) parseSingleDef() (def ast.Def) {
+	name := p.tok.Lit
+	p.match(token.NAME)
+
+	switch p.tok.Kind {
+	case token.COMMA:
+		def = p.parseVarDef(name)
+	case token.EQ:
+		def = p.parseVarDef(name)
+	}
+
+	return
+}
+
+func (p *Parser) parseSimulDef() (def ast.Def) {
+	def = p.parseSingleDef()
+
+	for p.tok.Kind == token.AND {
+		p.match(token.AND)
+		rhsDef := p.parseSingleDef()
+		def = &ast.AndDef{def, rhsDef}
+	}
+
+	return
+}
+
+func (p *Parser) parseDef() ast.Def {
+	p.match(token.LET)
+	return p.parseSimulDef()
+}
+
+func (p *Parser) Parse() *ast.Program {
 	var decls []ast.Decl
+	var defs []ast.Def
 	for {
 		switch p.tok.Kind {
 		case token.MANIFEST, token.GLOBAL:
-			decls = append(decls, p.parseConstantDefinition())
+			decls = append(decls, p.parseDecl())
+		case token.LET:
+			defs = append(defs, p.parseDef())
 		case token.EOF:
 			goto done
 		default:
-			p.error("expected start of definition.")
+			p.error(fmt.Sprintf("expected definition found '%s'.", p.tok))
 		}
 	}
 done:
-	return &ast.Module{decls}
-}
-
-func (p *Parser) Parse() *ast.Module {
-	// 2.2 Canonical Syntax
-	return p.parseDefinitions()
+	return &ast.Program{decls, defs}
 }
 
 func (p *Parser) Init(src []byte) {

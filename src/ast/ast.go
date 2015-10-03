@@ -5,6 +5,12 @@
 package ast
 
 // ----------------------------------------------------------------------------
+// 4.0 Primary expressions
+
+type Expr interface {
+}
+
+// ----------------------------------------------------------------------------
 // 4.1 Names
 
 // A name is a sequence of characters used
@@ -19,7 +25,22 @@ type NameList struct {
 }
 
 // ----------------------------------------------------------------------------
+// 5.0 Compound Expressions
+
+type ExprList struct {
+	Exprs []Expr
+}
+
+type ConstExpr struct {
+	Contant int
+}
+
+// ----------------------------------------------------------------------------
 // 7.0 Definitions
+
+type Def interface {
+	def()
+}
 
 // A global or constant declaration.
 type Decl interface {
@@ -55,8 +76,33 @@ func (c *ConstantDecl) VarDecls() []*VarDecl {
 	return c.Items
 }
 
+// ----------------------------------------------------------------------------
+// 7.5 Simple Definitions
+
+type AndDef struct {
+	Lhs Def
+	Rhs Def
+}
+
+func (*AndDef) def() {}
+
+type SimpleDef struct {
+	Names *NameList
+	Exprs *ExprList
+}
+
+func (*SimpleDef) def() {}
+
+type VecDef struct {
+	Name string
+	Expr Expr
+}
+
+func (*VecDef) def() {}
+
 // A top-level module that is a collection of all
 // declarations and definitions in the program segment.
-type Module struct {
+type Program struct {
 	Decls []Decl
+	Defs  []Def
 }

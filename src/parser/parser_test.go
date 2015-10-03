@@ -69,3 +69,15 @@ func TestDeclarations(t *testing.T) {
 		}
 	}
 }
+
+var test_simple_def_str = `
+let	X, Y, Z = 1, 2, 3
+and	W, S = 4, 5
+and	V = vec 5
+`
+
+func TestSimpleDefs(t *testing.T) {
+	var p Parser
+	p.Init([]byte(test_simple_def_str))
+	p.Parse()
+}
